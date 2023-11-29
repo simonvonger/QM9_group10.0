@@ -5,7 +5,7 @@ from Dataloader import DataLoaderQM9
 
 class PaiNN(nn.Module):
 
-    def __init__(self, r_cut, n_blocks = 3, embedding_size= 128,device: torch.device = 'cpu'): #rbf_size= 20, device: torch.device = 'cpu'):
+    def __init__(self, r_cut: float, n_blocks: int = 3, embedding_size: int = 128,device: torch.device = 'cpu'): #rbf_size= 20, device: torch.device = 'cpu'):
 
         # Instantiate as a module of PyTorch
         super(PaiNN, self).__init__()
@@ -102,7 +102,7 @@ class MessageBlock(nn.Module):
             nn.Linear(embedding_size, 3*embedding_size, bias=True)
         )
         self.rbf_layer = nn.Linear(20, 3*embedding_size, bias=True)
-    def forward(self, s, v, edges, r_ij, r_ij_normalized):
+    def forward(self, s: torch.Tensor, v: torch.Tensor, edges: torch.Tensor, r_ij: torch.Tensor, r_ij_normalized: torch.Tensor):
         rbf_pass = self.rbf_layer(RBF(r_ij, self.r_cut))
         rbf_pass = rbf_pass * fcut(r_ij, self.r_cut).unsqueeze(-1)
         s_pass = self.net(s)
@@ -128,14 +128,14 @@ class MessageBlock(nn.Module):
 class UpdateBlock(nn.Module):
     def __init__(self, embedding_size: int):
         super().__init__()
-        
+        self.embedding_size = embedding_size
         self.U = nn.Linear(embedding_size,embedding_size)
         self.V = nn.Linear(embedding_size,embedding_size)
 
         self.net = nn.Sequential(nn.Linear(embedding_size*2, embedding_size),
                                  nn.SiLU(),
                                  nn.Linear(embedding_size, embedding_size*3))
-        def forward(self, s, v):
+        def forward(self, s: torch.Tensor, v: torch.Tensor):
             U = self.U(v)
             V = self.V(v)
             V_norm = torch.linalg.norm(V,dim=1)
@@ -154,7 +154,7 @@ class UpdateBlock(nn.Module):
 
 
 if __name__=="__main__":
-    train_set = DataLoaderQM9(batch_size=100)
+    train_set = DataLoaderQM9(batch_size=2)
     model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
     val_set = train_set.get_val()
     test_set = train_set.get_test()

@@ -84,7 +84,7 @@ class Trainer:
 
         return val_loss/(i+1)
 
-    def _train(self, num_epoch: int = 3, early_stopping: int = 2, alpha: float = 0.9):
+    def _train(self, num_epoch: int = 10, early_stopping: int = 30, alpha: float = 0.9):
         """ Method to train the model
         Args:
             num_epoch: number of epochs you want to train for

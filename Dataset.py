@@ -7,7 +7,7 @@ from torch_geometric.datasets import QM9
 class DataSetQM9(Dataset):
 
     def __init__(self,r_cut:float,path:str,self_edge:bool=False):
-        self.data =QM9(root=path)
+        self.data = QM9(root=path)
         self.r_cut=r_cut
         self.self_edge=self_edge
     
