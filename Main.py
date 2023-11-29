@@ -4,8 +4,7 @@ import numpy
 from Dataloader import DataLoaderQM9
 from Model import PaiNN
 from Training import Trainer
-from Training import mse
-
+from utils import mse, mae
 
 def training():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,7 +25,7 @@ def training():
             scheduler=scheduler,
             device=device
         )
-        trainer._train(num_epoch = 3, early_stopping = 2)
+        trainer._train(num_epoch = 100, early_stopping = 30)
         trainer.plot_data()
 
 if __name__=="__main__":

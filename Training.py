@@ -2,12 +2,13 @@ import torch
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
+from utils import mse, mae
 
-def mse(preds: torch.Tensor, targets: torch.Tensor):
-    return torch.mean((preds - targets).square())
+# def mse(preds: torch.Tensor, targets: torch.Tensor):
+#     return torch.mean((preds - targets).square())
 
-def mae(preds: torch.Tensor, targets: torch.Tensor):
-    return torch.mean(torch.abs(preds - targets))
+# def mae(preds: torch.Tensor, targets: torch.Tensor):
+#     return torch.mean(torch.abs(preds - targets))
 
 class Trainer:
     """ Responsible for training loop and validation """
@@ -84,7 +85,7 @@ class Trainer:
 
         return val_loss/(i+1)
 
-    def _train(self, num_epoch: int = 3, early_stopping: int = 2, alpha: float = 0.9):
+    def _train(self, num_epoch: int = 10, early_stopping: int = 30, alpha: float = 0.9):
         """ Method to train the model
         Args:
             num_epoch: number of epochs you want to train for
