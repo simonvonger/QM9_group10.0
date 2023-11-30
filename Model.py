@@ -102,16 +102,9 @@ class MessageBlock(nn.Module):
             nn.Linear(embedding_size, 3*embedding_size)
         )
 
-        self.rbf_layer = nn.Linear(n_rbf, 3*embedding_size, bias=True)
+        self.rbf_layer = nn.Linear(n_rbf, 3*embedding_size)
 
     def forward(self, s: torch.Tensor, v: torch.Tensor, edges: torch.Tensor, r_ij: torch.Tensor, r_ij_normalized: torch.Tensor):
-        rbf_pass = self.rbf_layer(RBF(r_ij, self.r_cut,output_size=self.n_rbf))
-        fcut_pass= rbf_pass * fcut(r_ij, self.r_cut).unsqueeze(-1)
-        rbf_pass = rbf_pass * fcut_pass
-        s_pass = self.net(s)
-        pass_out = rbf_pass * s_pass[edges[:,1]]
-       
-        delta_v, delta_s, delta_rep = torch.split(pass_out,128, dim=-1)
         
         rbf = RBF(r_ij, r_cut = self.r_cut)
         
