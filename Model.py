@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import numpy
@@ -79,38 +80,53 @@ class PaiNN(nn.Module):
 #### hertil er det godt
 
 ### define radial basis function
-def RBF(r_ij, r_cut: float):
-    r_RBF = []
-    n_values = torch.arange(1, 21, dtype=torch.float32)
-    for i in n_values:
-        r_RBF_n = (torch.sin((i * torch.pi / r_cut) * r_ij)) / r_ij
-        r_RBF.append(r_RBF_n)
+def RBF(r_ij: torch.Tensor, r_cut: float, out: int = 20):
+    # r_RBF = []
+    # n_values = torch.arange(1, out +1).to(r_ij.device)
+    # for i in n_values:
+    #     r_RBF_n = (torch.sin((i * torch.pi / r_cut) * r_ij)) / r_ij
+    #     r_RBF.append(r_RBF_n)
 
-    r_RBF = torch.cat(r_RBF, dim=1)
-    return r_RBF
-def fcut(r_ij, r_cut: float):
-        f_c = 0.5 * (torch.cos(torch.pi * r_ij / r_cut) + 1)
-        return f_c
+    # r_RBF = torch.cat(r_RBF, dim=1)
+    # n = torch.arange(edge_size, device=edge_dist.device) + 1
+    # return torch.sin(edge_dist.unsqueeze(-1) * n * torch.pi / cutoff) / edge_dist.unsqueeze(-1)
+
+    n = torch.arange(out, device=r_ij.device) + 1
+    return torch.sin(r_ij.unsqueeze(-1) * n * torch.pi / r_cut) / r_ij.unsqueeze(-1)
+
+def fcut(r_ij: torch.Tensor, r_cut: float):
+        #f_c = torch.where(r_ij < r_cut, 0.5 * (torch.cos(torch.pi * r_ij / r_cut) + 1), torch.tensor(0.0, device=r_ij.device, dtype=r_ij.dtype))
+        #return f_c
+        return 0.5 * (1 + torch.cos(torch.pi * r_ij / r_cut)) * (r_ij < r_cut).float()
+
 #https://github.com/Yangxinsix/painn-sli/blob/main/PaiNN/model.py
 class MessageBlock(nn.Module):
     def __init__(self, embedding_size: int, r_cut = float):
         super(MessageBlock, self).__init__()
         self.r_cut = r_cut
         self.net = nn.Sequential(
-            nn.Linear(embedding_size, embedding_size, bias=True),
+            nn.Linear(embedding_size, embedding_size),
             nn.SiLU(),
-            nn.Linear(embedding_size, 3*embedding_size, bias=True)
+            nn.Linear(embedding_size, 3*embedding_size)
         )
-        self.rbf_layer = nn.Linear(20, 3*embedding_size, bias=True)
+        self.rbf_layer = nn.Linear(20, 3*embedding_size)
     def forward(self, s: torch.Tensor, v: torch.Tensor, edges: torch.Tensor, r_ij: torch.Tensor, r_ij_normalized: torch.Tensor):
-        rbf_pass = self.rbf_layer(RBF(r_ij, self.r_cut))
-        rbf_pass = rbf_pass * fcut(r_ij, self.r_cut).unsqueeze(-1)
-        s_pass = self.net(s)
-        pass_out = rbf_pass * s_pass[edges[:,1]]
-       
-        delta_v, delta_s, delta_rep = pass_out.split(128, dim=-1)
         
-        delta_v = v[edges[:,1]] * delta_v.unsqueeze(1) # hamard of neighbouring vectors
+        rbf = RBF(r_ij, r_cut = self.r_cut)
+        
+        rbf_pass = self.rbf_layer(rbf)
+
+        f_cut = fcut(r_ij, r_cut = self.r_cut)
+
+        rbf_fcut = rbf_pass * f_cut
+        
+        s_pass = self.net(s)
+        
+        pass_out = rbf_fcut * s_pass[edges[:,1]]
+       
+        delta_v, delta_s, delta_rep = torch.split(pass_out, 128, dim=-1)
+        
+        delta_v = v[edges[:,1]] * delta_v.unsqueeze(dim = 11) # hamard of neighbouring vectors
         
         delta_direction = r_ij_normalized.unsqueeze(dim=-1) * delta_rep.unsqueeze(dim=1) #norm af r_ij ganget med split, virker ikke pga unsqueeze
         
@@ -129,32 +145,32 @@ class UpdateBlock(nn.Module):
     def __init__(self, embedding_size: int):
         super().__init__()
         self.embedding_size = embedding_size
-        self.U = nn.Linear(embedding_size,embedding_size)
-        self.V = nn.Linear(embedding_size,embedding_size)
+        self.U = nn.Linear(embedding_size,embedding_size, bias=False)
+        self.V = nn.Linear(embedding_size,embedding_size, bias=False)
 
         self.net = nn.Sequential(nn.Linear(embedding_size*2, embedding_size),
                                  nn.SiLU(),
                                  nn.Linear(embedding_size, embedding_size*3))
-        def forward(self, s: torch.Tensor, v: torch.Tensor):
-            U = self.U(v)
-            V = self.V(v)
-            V_norm = torch.linalg.norm(V,dim=1)
-            sv_stack = torch.cat((V_norm, s), dim=1)
-            sv_stack_pass = self.net(sv_stack)
-            avv, asv, ass = torch.split(sv_stack_pass, v.shape[-1], dim = 1)
-            d_v = avv.unsqueeze(1)*U
-            product = torch.sum(U * V, dim=1) # den underlige vi troede var scalar
-            d_s = product * asv + ass
-            s = s + d_s
-            v = v + d_v
-            return s, v
-        
+    def forward(self, s: torch.Tensor, v: torch.Tensor):
+        Uv = self.U(v)
+        Vv = self.V(v)
+        V_norm = torch.linalg.norm(Vv,dim=1)
+        sv_stack = torch.cat((V_norm, s), dim=1)
+        sv_stack_pass = self.net(sv_stack)
+        avv, asv, ass = torch.split(sv_stack_pass, dim = 1)
+        d_v = avv.unsqueeze(dim=1)*Uv
+        product = torch.sum(Uv * Vv, dim=1) # den underlige vi troede var scalar
+        d_s = product * asv + ass
+        s = s + d_s
+        v = v + d_v
+        return s, v
+    
 
 
 
 
 if __name__=="__main__":
-    train_set = DataLoaderQM9(batch_size=2)
+    train_set = DataLoaderQM9(batchsize=2)
     model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
     val_set = train_set.get_val()
     test_set = train_set.get_test()

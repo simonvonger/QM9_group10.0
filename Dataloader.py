@@ -27,13 +27,17 @@ class DataLoaderQM9(DataLoader):
         super().__init__(self.dataset, sampler=self.train_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
     
     
-    def collate_fn(self, data):
+    def collate_fn(self, data, pin_memory = True):
         """Handle how we stack a batch
         Args:
             data: the data before we output the batch (a tuple containing the dictionary for each molecule)
         """
 
         batch_dict = {k: [dic[k] for dic in data] for k in data[0].keys()} 
+        if pin_memory:
+            pin = lambda x: x.pin_memory()
+        else:
+            pin = lambda x: x
 
         # We need to define the id and the edges_coord differently (because we begin indexing from 0)
         n_atoms = torch.tensor(batch_dict["n_atom"])
@@ -50,7 +54,7 @@ class DataLoaderQM9(DataLoader):
             'z': torch.cat(batch_dict['z']),
             'xyz': torch.cat(batch_dict['xyz']),
             'edges': edges_coord,
-            'r_ij': torchx.cat(batch_dict['r_ij']),
+            'r_ij': torch.cat(batch_dict['r_ij']),
             'r_ij_normalized': torch.cat(batch_dict['r_ij_normalized']),
             'graph_idx': ids,
             'targets': torch.cat(batch_dict['targets'])
