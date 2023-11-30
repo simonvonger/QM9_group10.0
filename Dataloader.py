@@ -22,7 +22,7 @@ class DataLoaderQM9(DataLoader):
             self.test_sampler = self._split(test_split)
         if val_split:
             self.test_sampler = self._split(val_split)
-        self.init_kwargs = {'batch_size': batchsize, 'num_workers': nworkers} #TODO: overvej nworkers
+        self.init_kwargs = {'batchsize': batchsize, 'num_workers': nworkers} #TODO: overvej nworkers
         #Return training set
         super().__init__(self.dataset, sampler=self.train_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
     
@@ -34,6 +34,7 @@ class DataLoaderQM9(DataLoader):
         """
 
         batch_dict = {k: [dic[k] for dic in data] for k in data[0].keys()} 
+
         if pin_memory:
             pin = lambda x: x.pin_memory()
         else:
