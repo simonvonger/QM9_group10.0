@@ -3,6 +3,7 @@ import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from utils import mse, mae
+from Dataloader import DataLoaderQM9
 
 # def mse(preds: torch.Tensor, targets: torch.Tensor):
 #     return torch.mean((preds - targets).square())
@@ -13,7 +14,7 @@ from utils import mse, mae
 class Trainer:
     """ Responsible for training loop and validation """
     
-    def __init__(self, model: torch.nn.Module, loss: any, target: int, optimizer: torch.optim, data_loader, scheduler: torch.optim, device: torch.device = "cpu"):
+    def __init__(self, model: torch.nn.Module, loss: any, target: int, optimizer: torch.optim, Dataloader, scheduler: torch.optim, device: torch.device = "cpu"):
         """ Constructor
         Args:   
             model: Model to use (usually PaiNN)
@@ -30,9 +31,9 @@ class Trainer:
         self.scheduler = scheduler
         self.device = device
 
-        self.train_set = data_loader
-        self.valid_set = data_loader.get_val()
-        self.test_set = data_loader.get_test()
+        self.train_set = Dataloader
+        self.valid_set = Dataloader.get_val()
+        self.test_set = Dataloader.get_test()
         self.learning_curve = []
         self.valid_perf= []
         self.learning_rates = []
