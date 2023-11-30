@@ -2,12 +2,13 @@ import torch
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
+from utils import mse, mae
 
-def mse(preds: torch.Tensor, targets: torch.Tensor):
-    return torch.mean((preds - targets).square())
+# def mse(preds: torch.Tensor, targets: torch.Tensor):
+#     return torch.mean((preds - targets).square())
 
-def mae(preds: torch.Tensor, targets: torch.Tensor):
-    return torch.mean(torch.abs(preds - targets))
+# def mae(preds: torch.Tensor, targets: torch.Tensor):
+#     return torch.mean(torch.abs(preds - targets))
 
 class Trainer:
     """ Responsible for training loop and validation """
