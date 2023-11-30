@@ -120,7 +120,7 @@ class MessageBlock(nn.Module):
        
         delta_v, delta_s, delta_rep = torch.split(pass_out, 128, dim=-1)
         
-        delta_v = v[edges[:,1]] * delta_v.unsqueeze(dim = 11) # hamard of neighbouring vectors
+        delta_v = v[edges[:,1]] * delta_v.unsqueeze(dim = 1) # hamard of neighbouring vectors
         
         delta_direction = r_ij_normalized.unsqueeze(dim=-1) * delta_rep.unsqueeze(dim=1) #norm af r_ij ganget med split, virker ikke pga unsqueeze
         
@@ -142,14 +142,14 @@ class UpdateBlock(nn.Module):
                                  nn.SiLU(),
                                  nn.Linear(embedding_size, embedding_size*3))
     def forward(self, s: torch.Tensor, v: torch.Tensor):
-        U = self.U(v)
-        V = self.V(v)
-        V_norm = torch.linalg.norm(V,dim=1)
+        U_v = self.U(v)
+        V_v = self.V(v)
+        V_norm = torch.linalg.norm(V_v,dim=1)
         sv_stack = torch.cat((V_norm, s), dim=1)
         sv_stack_pass = self.net(sv_stack)
         avv, asv, ass = torch.split(sv_stack_pass, v.shape[-1], dim = 1)
-        d_v = avv.unsqueeze(1)*U
-        product = torch.sum(U * V, dim=1) # den underlige vi troede var scalar
+        d_v = avv.unsqueeze(dim = 1)*U_v
+        product = torch.sum(U_v * V_v, dim=1) # den underlige vi troede var scalar
         d_s = product * asv + ass
         s = s + d_s
         v = v + d_v
