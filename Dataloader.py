@@ -9,20 +9,19 @@ from Dataset import DataSetQM9
 #TODO: overvej at bruger nworkers
 
 class DataLoaderQM9(DataLoader):
-    def __init__(self, datapath: str = "data", batchsize: int = 50, r_cut: float = 5., self_edge: bool=False,test_split: float = 0.1,val_split: float=0.2, nworkers: int = 2):
+    def __init__(self, datapath: str = "data", batch_size: int = 50, r_cut: float = 5., self_edge: bool=False,test_split: float = 0.1,val_split: float=0.2, nworkers: int = 2):
         self.r_cut= r_cut
         self.dataset = DataSetQM9(path=datapath, r_cut=r_cut,self_edge=self_edge)
         self.length=len(self.dataset)
         self.train_sampler = SubsetRandomSampler(np.array(range(self.length)))
         self.valid_sampler = None
         self.test_sampler = None
-        # self.batchsize = batchsize
 
         if test_split:
             self.test_sampler = self._split(test_split)
         if val_split:
             self.test_sampler = self._split(val_split)
-        self.init_kwargs = {'batchsize': batchsize, 'num_workers': nworkers} #TODO: overvej nworkers
+        self.init_kwargs = {'batch_size': batch_size, 'num_workers': nworkers} #TODO: overvej nworkers
         #Return training set
         super().__init__(self.dataset, sampler=self.train_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
     
