@@ -11,8 +11,8 @@ from Dataset import DataSetQM9
 class DataLoaderQM9(DataLoader):
     def __init__(self, datapath: str = "data", batch_size: int = 50, r_cut: float = 5., self_edge: bool=False,test_split: float = 0.1,val_split: float=0.2, nworkers: int = 2):
         self.r_cut= r_cut
-        self.dataset = DataSetQM9(path=datapath, r_cut=r_cut,self_edge=self_edge)
-        self.length=len(self.dataset)
+        self.Dataset = DataSetQM9(path=datapath, r_cut=r_cut,self_edge=self_edge)
+        self.length=len(self.Dataset)
         self.train_sampler = SubsetRandomSampler(np.array(range(self.length)))
         self.valid_sampler = None
         self.test_sampler = None
@@ -23,7 +23,7 @@ class DataLoaderQM9(DataLoader):
             self.test_sampler = self._split(val_split)
         self.init_kwargs = {'batch_size': batch_size, 'num_workers': nworkers} #TODO: overvej nworkers
         #Return training set
-        super().__init__(self.dataset, sampler=self.train_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
+        super().__init__(self.Dataset, sampler=self.train_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
     
     
     def collate_fn(self, data, pin_memory = True):
@@ -82,18 +82,32 @@ class DataLoaderQM9(DataLoader):
 
         return SubsetRandomSampler(split_idx)
 
-    def get_val(self) -> list:
-        """ Return the validation data"""
-        if self.valid_sampler is None:
-            return None
-        else: 
-            return DataLoader(self.dataset, sampler=self.valid_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
+    # def get_val(self) -> list:
+    #     """ Return the validation data"""
+    #     if self.valid_sampler is None:
+    #         return []
+    #     else: 
+    #         return DataLoader(self.Dataset, sampler=self.valid_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
 
-    def get_test(self) -> list:
-        """ Return the test data"""
+    # def get_test(self) -> list:
+    #     """ Return the test data"""
+    #     if self.test_sampler is None:
+    #         return []
+    #     else: 
+    #         return DataLoader(self.Dataset, sampler=self.test_sampler, collate_fn = self.collate_fn, **self.init_kwargs)
+    def get_val(self) -> DataLoader:
+        """ Return the validation data DataLoader"""
+        if self.valid_sampler is None:
+            return DataLoader(self.Dataset, collate_fn=self.collate_fn, **self.init_kwargs)
+        else:
+            return DataLoader(self.Dataset, sampler=self.valid_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
+    def get_test(self) -> DataLoader:
+        """ Return the test data DataLoader"""
         if self.test_sampler is None:
-            return None
-        else: 
-            return DataLoader(self.dataset, sampler=self.test_sampler, collate_fn = self.collate_fn, **self.init_kwargs)
+            return DataLoader(self.Dataset, collate_fn=self.collate_fn, **self.init_kwargs)
+        else:
+            return DataLoader(self.Dataset, sampler=self.test_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
+
+
 
 

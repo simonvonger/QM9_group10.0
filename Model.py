@@ -157,9 +157,9 @@ class UpdateBlock(nn.Module):
         
 if __name__=="__main__":
     train_set = DataLoaderQM9(batch_size=2)
-    model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
+    Model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
     val_set = train_set.get_val()
     test_set = train_set.get_test()
     for i, batch in enumerate(train_set):
-        output = model(batch)
+        output = Model(batch)
         print(output)
