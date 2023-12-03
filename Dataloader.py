@@ -20,7 +20,7 @@ class DataLoaderQM9(DataLoader):
         if test_split:
             self.test_sampler = self._split(test_split)
         if val_split:
-            self.test_sampler = self._split(val_split)
+            self.valid_sampler = self._split(val_split)
         self.init_kwargs = {'batch_size': batch_size, 'num_workers': nworkers} #TODO: overvej nworkers
         #Return training set
         super().__init__(self.Dataset, sampler=self.train_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
