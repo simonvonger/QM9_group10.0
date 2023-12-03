@@ -98,15 +98,15 @@ class DataLoaderQM9(DataLoader):
     def get_val(self) -> DataLoader:
         """ Return the validation data DataLoader"""
         if self.valid_sampler is None:
-            return DataLoader(self.Dataset, collate_fn=self.collate_fn, **self.init_kwargs)
+            return DataLoader(self.Dataset, collate_fn=self.collate_fn, **self.init_kwargs,pin_memory=True)
         else:
-            return DataLoader(self.Dataset, sampler=self.valid_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
+            return DataLoader(self.Dataset, sampler=self.valid_sampler, collate_fn=self.collate_fn, **self.init_kwargs,pin_memory=True)
     def get_test(self) -> DataLoader:
         """ Return the test data DataLoader"""
         if self.test_sampler is None:
-            return DataLoader(self.Dataset, collate_fn=self.collate_fn, **self.init_kwargs)
+            return DataLoader(self.Dataset, collate_fn=self.collate_fn, **self.init_kwargs,pin_memory=True)
         else:
-            return DataLoader(self.Dataset, sampler=self.test_sampler, collate_fn=self.collate_fn, **self.init_kwargs)
+            return DataLoader(self.Dataset, sampler=self.test_sampler, collate_fn=self.collate_fn, **self.init_kwargs,pin_memory=True)
 
 
 

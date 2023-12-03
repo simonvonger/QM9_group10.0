@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from utils import mse, mae
+from Model import mse, mae
 from Dataloader import DataLoaderQM9
 
 # def mse(preds: torch.Tensor, targets: torch.Tensor):
@@ -56,7 +56,7 @@ class Trainer:
         for batch_num, batch in enumerate(self.train_set):
             # Using our chosen device
             targets = batch["targets"][:, self.target].to(self.device).unsqueeze(dim=-1)
-
+            
             # Backpropagate using the selected loss
             outputs = self.Model(batch)
             loss = self.loss(outputs, targets)
@@ -130,14 +130,14 @@ class Trainer:
             return val_loss / batch_num 
 
 
-    def _train(self, num_epoch: int = 10, early_stopping: int = 30, alpha: float = 0.9):
+    def _train(self, num_epoch: int = 100, early_stopping: int = 30, alpha: float = 0.9):
         """ Method to train the model
         Args:
             num_epoch: number of epochs you want to train for
             alpha: exponential smoothing factor
         """
         patience = 0
-        min_loss = float('inf')  # Initialize min_loss with a large value
+        #min_loss = float('inf')  # Initialize min_loss with a large value
         for epoch in range(num_epoch):
             self._train_epoch()
             # Validate at the end of an epoch

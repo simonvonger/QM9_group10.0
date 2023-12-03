@@ -4,7 +4,7 @@ import numpy
 from Dataloader import DataLoaderQM9
 from Model import PaiNN
 from Training import Trainer
-from Training import mse
+from Model import mse, mae
 import matplotlib.pyplot as plt
 
 def training():
