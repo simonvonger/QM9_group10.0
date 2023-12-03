@@ -14,7 +14,7 @@ from Dataloader import DataLoaderQM9
 class Trainer:
     """ Responsible for training loop and validation """
     
-    def __init__(self, Model: torch.nn.Module, loss: any, target: int, optimizer: torch.optim, Dataloader, scheduler: torch.optim, device: torch.device = "cpu"):
+    def __init__(self, Model, loss, target, optimizer, Dataloader, scheduler, device):
         """ Constructor
         Args:   
             model: Model to use (usually PaiNN)
