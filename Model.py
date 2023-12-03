@@ -28,6 +28,8 @@ def mae(preds: torch.Tensor, targets: torch.Tensor):
     loss = nn.L1Loss()
     return loss(preds,targets)
 
+
+
 class PaiNN(nn.Module):
 
     def __init__(self, r_cut: float, n_blocks: int = 3, embedding_size: int = 128,n_rbf: int=20,device: torch.device = 'cpu'): #rbf_size= 20, device: torch.device = 'cpu'):
@@ -177,12 +179,29 @@ class UpdateBlock(nn.Module):
         s = s + d_s
         v = v + d_v
         return s, v
-        
+    
+def saveModel():
+    path = "./PaiNNModel.pth"
+    torch.save(Model.state_dict(), path)
+
+def test():
+    Model = PaiNN(r_cut = getattr(test_set, 'r_cut'))
+    path = "PaiNNModel.pth"
+    Model.load_state_dict(torch.load(path))
+
+    for batch in enumerate(test_set):
+        predictions = Model(batch)
+        print(predictions)
+
+
+
 if __name__=="__main__":
     train_set = DataLoaderQM9(batch_size=2)
     Model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
     val_set = train_set.get_val()
     test_set = train_set.get_test()
-    for i, batch in enumerate(train_set):
+   # for i, batch in enumerate(train_set):
+    for batch in enumerate(train_set):
         output = Model(batch)
         print(output)
+    test()

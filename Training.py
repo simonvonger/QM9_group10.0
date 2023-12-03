@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from Model import mse, mae
+from Model import mse, mae, saveModel
 from Dataloader import DataLoaderQM9
 
 # def mse(preds: torch.Tensor, targets: torch.Tensor):
@@ -154,8 +154,17 @@ class Trainer:
                     break
             else:
                 patience = 0
+            
+                
+           # min_loss = val_loss_s if epoch == 0 else min(min_loss, val_loss_s)
+            
+            if epoch == 0:
+                min_loss = val_loss_s
+                saveModel()
+            else:
+                min_loss = min(min_loss,val_loss_s)
+                saveModel()
 
-            min_loss = val_loss_s if epoch == 0 else min(min_loss, val_loss_s)
 
             del val_loss        
 
