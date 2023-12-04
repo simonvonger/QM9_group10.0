@@ -55,6 +55,7 @@ class Trainer:
         """
         for batch_num, batch in enumerate(self.train_set):
             # Using our chosen device
+            batch = {key: value.to(self.device) for key, value in batch.items()}
             targets = batch["targets"][:, self.target].to(self.device).unsqueeze(dim=-1)
             
             # Backpropagate using the selected loss
@@ -113,10 +114,11 @@ class Trainer:
             
            
             for batch_num, batch in enumerate(self.valid_set):
+                
                 if not batch:
                     print(f"Empty batch encountered in validation set at batch {batch_num}.")
                     continue
-
+                batch = {key: value.to(self.device) for key, value in batch.items()}
                 targets = batch["targets"][:, self.target].to(self.device).unsqueeze(dim=-1)
                 pred_val = self.Model(batch)
                 
@@ -137,7 +139,8 @@ class Trainer:
             alpha: exponential smoothing factor
         """
         patience = 0
-        #min_loss = float('inf')  # Initialize min_loss with a large value
+        min_loss = float('inf')  # Initialize min_loss with a large value
+        best_model_path = None #where the best model is 
         for epoch in range(num_epoch):
             self._train_epoch()
             # Validate at the end of an epoch
@@ -148,25 +151,35 @@ class Trainer:
             # Exponential smoothing for validation
             self.valid_perf.append(val_loss_s if epoch == 0 else alpha*val_loss_s + (1-alpha)*self.valid_perf[-1])
             
-            if epoch != 0 and min(min_loss, val_loss_s) == min_loss:
-                patience +=1
-                if patience >= early_stopping:
-                    break
-            else:
-                patience = 0
+        #     if epoch != 0 and min(min_loss, val_loss_s) == min_loss:
+        #         patience +=1
+        #         if patience >= early_stopping:
+        #             break
+        #     else:
+        #         patience = 0
             
                 
-           # min_loss = val_loss_s if epoch == 0 else min(min_loss, val_loss_s)
+        #    # min_loss = val_loss_s if epoch == 0 else min(min_loss, val_loss_s)
             
-            if epoch == 0:
+        #     if epoch == 0:
+        #         min_loss = val_loss_s
+        #         saveModel()
+        #     else:
+        #         min_loss = min(min_loss,val_loss_s)
+        #         saveModel()
+            if val_loss < min_loss:
+                patience = 0
                 min_loss = val_loss_s
-                saveModel()
+                saveModel(self.Model, path = "./best_PaiNNModel.pth")
+                best_model_path = "./best_PaiNNModel.pth"
             else:
-                min_loss = min(min_loss,val_loss_s)
-                saveModel()
+                patience += 1
+                if patience >= early_stopping:
+                    break
 
 
-            del val_loss        
+            del val_loss
+        return best_model_path        
 
     def plot_data(self):
         p_data = (self.learning_curve, self.valid_perf, self.learning_rates)

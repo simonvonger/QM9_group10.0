@@ -9,14 +9,14 @@ from Dataset import DataSetQM9
 #TODO: overvej at bruger nworkers
 
 class DataLoaderQM9(DataLoader):
-    def __init__(self, datapath: str = "data", batch_size: int = 50, r_cut: float = 5., self_edge: bool=False,test_split: float = 0.1,val_split: float=0.2, nworkers: int = 2):
+    def __init__(self, datapath: str = "data", batch_size: int = 50, r_cut: float = 5., self_edge: bool=False,test_split: float = 0.1,val_split: float=0.2, nworkers: int = 2, device: torch.device = "cpu"):
         self.r_cut= r_cut
         self.Dataset = DataSetQM9(path=datapath, r_cut=r_cut,self_edge=self_edge)
         self.length=len(self.Dataset)
         self.train_sampler = SubsetRandomSampler(np.array(range(self.length)))
         self.valid_sampler = None
         self.test_sampler = None
-
+        self.device = device
         # if test_split:
         #     self.test_sampler = self._split(test_split)
         # if val_split:
@@ -57,13 +57,13 @@ class DataLoaderQM9(DataLoader):
         edges_coord += torch.cat(batch_dict['edges'])
 
         return {
-            'z': torch.cat(batch_dict['z']),
-            'xyz': torch.cat(batch_dict['xyz']),
-            'edges': edges_coord,
-            'r_ij': torch.cat(batch_dict['r_ij']),
-            'r_ij_normalized': torch.cat(batch_dict['r_ij_normalized']),
-            'graph_idx': ids,
-            'targets': torch.cat(batch_dict['targets'])
+            'z': torch.cat(batch_dict['z']).to(self.device),
+            'xyz': torch.cat(batch_dict['xyz']).to(self.device),
+            'edges': edges_coord.to(self.device),
+            'r_ij': torch.cat(batch_dict['r_ij']).to(self.device),
+            'r_ij_normalized': torch.cat(batch_dict['r_ij_normalized']).to(self.device),
+            'graph_idx': ids.to(self.device),
+            'targets': torch.cat(batch_dict['targets']).to(self.device)
         }
     def _split(self, validation_split: float):
         """ Creates a sampler to extract training and validation data

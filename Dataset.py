@@ -6,12 +6,12 @@ from torch_geometric.datasets import QM9
 
 class DataSetQM9(Dataset):
 
-    def __init__(self,r_cut:float,path:str,self_edge:bool=False):
+    def __init__(self,r_cut:float,path:str,self_edge:bool=False, device: torch.device = "cpu" ):
         super(DataSetQM9,self).__init__()
         self.data = QM9(root=path)
         self.r_cut=r_cut
         self.self_edge=self_edge
-    
+        self.device = device
     def edges_atoms(self,pos) -> (torch.Tensor,torch.Tensor,torch.Tensor):
         n_atoms=pos.shape[0]
         edges = []
@@ -37,6 +37,9 @@ class DataSetQM9(Dataset):
     
     def __getitem__(self,idx)-> torch.Tensor:
         edges, r, r_ij_normalized = self.edges_atoms(self.data[idx]['pos'])
+        edges = edges.to(self.device)
+        r = r.to(self.device)
+        r_ij_normalized = r_ij_normalized.to(self.device)
         molecule = self.data[idx].clone().detach()
 
         return {'z':molecule['z'],'xyz' : molecule['pos'],'edges': edges, 'r_ij': r, 'r_ij_normalized': r_ij_normalized, 'targets': molecule['y'],'n_atom': molecule['z'].shape[0]}

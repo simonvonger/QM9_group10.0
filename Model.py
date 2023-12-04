@@ -60,7 +60,7 @@ class PaiNN(nn.Module):
             nn.Linear(embedding_size, 1)
             )
 
-
+        self.to(device)
 
     def forward(self, input):
 
@@ -74,7 +74,7 @@ class PaiNN(nn.Module):
 
 
         # Outputs from the atomic numbers
-        s = self.embedding_layer(z)
+        s = self.embedding_layer(z).to(self.device)
 
         # Initializing the v0
         v = torch.zeros((unique_atm_mat.shape[0], 3, self.embedding_size), # tidligere navn: v_j
@@ -180,18 +180,23 @@ class UpdateBlock(nn.Module):
         v = v + d_v
         return s, v
     
-def saveModel():
-    path = "./PaiNNModel.pth"
+def saveModel(Model, path = "./PaiNNModel.pth"):
     torch.save(Model.state_dict(), path)
 
-def test():
-    Model = PaiNN(r_cut = getattr(test_set, 'r_cut'))
-    path = "PaiNNModel.pth"
-    Model.load_state_dict(torch.load(path))
+def test(model, test_set):
+    model.eval()
+    device = next(model.parameters()).device
 
-    for batch in enumerate(test_set):
-        predictions = Model(batch)
-        print(predictions)
+    test_loss = 0.0
+    
+    with torch.no_grad():
+        for batch_num, batch in enumerate(test_set):
+            targets = batch["targets"][:,2].to(device).unsqueeze(dim=-1)
+            outputs = model(batch)
+            loss = mae(outputs, targets)
+            test_loss += loss.item()
+    avg_test_loss = test_loss / (batch_num + 1)
+    print(f"Average test MAE loss: {avg_test_loss}")
 
 
 
