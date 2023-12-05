@@ -8,6 +8,7 @@ from Training import Trainer
 from Model import saveModel, mse, mae, test
 import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 Model = PaiNN(r_cut=5,
                 device=device
                 ).to(device)
@@ -42,6 +43,6 @@ if __name__=="__main__":
     best_model = PaiNN(r_cut=5, device=device).to(device)
     best_model.load_state_dict(torch.load("./final_best_PaiNNModel.pth"))
     #test it
-    test(best_model, DataLoaderQM9(r_cut=5, batch_size=100)).get_test()
+    test(best_model, DataLoaderQM9(r_cut=5, batch_size=100).get_test())
 
     
