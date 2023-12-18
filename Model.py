@@ -14,12 +14,6 @@ def fcut(inputs: torch.Tensor, r_cut: float):
     f_c = torch.where(inputs <= r_cut, 0.5 * (torch.cos(torch.pi * inputs / r_cut) + 1), torch.tensor(0.0, device=inputs.device, dtype=inputs.dtype))
     return f_c
 
-#def mse(preds: torch.Tensor, targets: torch.Tensor):
-   # return torch.mean((preds - targets).square())
-
-#def mae(preds: torch.Tensor, targets: torch.Tensor):
-    #return torch.mean(torch.abs(preds - targets))
-
 def mse(preds: torch.Tensor, targets: torch.Tensor):
     loss = nn.MSELoss()
     return loss(preds,targets)
@@ -106,15 +100,6 @@ class PaiNN(nn.Module):
 
 #### hertil er det godt
 
-### define radial basis function
-# def RBF(inputs: torch.Tensor, r_cut: float,output_size: int=20):
-#     n = torch.arange(1,output_size+1).to(inputs.device)
-#     return ((torch.sin((n * torch.pi / r_cut) * inputs)) / inputs)
-   
-# def fcut(inputs: torch.Tensor, r_cut: float):
-#         f_c = 0.5 * (torch.cos(torch.pi * inputs / r_cut) + 1) * (inputs<r_cut).float()
-#         return f_c
-
 #https://github.com/Yangxinsix/painn-sli/blob/main/PaiNN/model.py
 class MessageBlock(nn.Module):
     def __init__(self, embedding_size: int, n_rbf: int,r_cut = float):
@@ -199,14 +184,13 @@ def test(model, test_set):
     print(f"Average test MAE loss: {avg_test_loss}")
 
 
-
-if __name__=="__main__":
-    train_set = DataLoaderQM9(batch_size=2)
-    Model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
-    val_set = train_set.get_val()
-    test_set = train_set.get_test()
-   # for i, batch in enumerate(train_set):
-    for batch in enumerate(train_set):
-        output = Model(batch)
-        print(output)
-    test()
+# if __name__=="__main__":
+#     train_set = DataLoaderQM9(batch_size=2)
+#     Model = PaiNN(r_cut = getattr(train_set, 'r_cut'))
+#     val_set = train_set.get_val()
+#     test_set = train_set.get_test()
+#    # for i, batch in enumerate(train_set):
+#     for batch in enumerate(train_set):
+#         output = Model(batch)
+#         print(output)
+#     test()
