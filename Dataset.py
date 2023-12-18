@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from torch_geometric.datasets import QM9
 
 class DataSetQM9(Dataset):
-
+    
     def __init__(self,r_cut:float,path:str,self_edge:bool=False, device: torch.device = "cpu" ):
         super(DataSetQM9,self).__init__()
         self.data = QM9(root=path)
@@ -14,23 +14,19 @@ class DataSetQM9(Dataset):
         self.device = device
     def edges_atoms(self,pos) -> (torch.Tensor,torch.Tensor,torch.Tensor):
         n_atoms=pos.shape[0]
-        edges = []
-        r = []
-        r_ij_normalized = []
+        edges, r, r_ij_normalized = [], [], []
+
         for i in range(n_atoms):
             for j in range(i+1):
                 if i == j and self.self_edge:
                     edges.append([i,j])
                 diff = pos[j]-pos[i]
                 r_ij = torch.linalg.norm(diff)
-                #Filtere r_ij  mindre end r_cut
+                #Filters r_ij less than r_cut
                 if r_ij <= self.r_cut and i!=j:
-                    edges.append([i,j])
-                    edges.append([j,i])
-                    r.append(r_ij.item())
-                    r.append(r_ij.item())
-                    r_ij_normalized.append((diff/r_ij).tolist())
-                    r_ij_normalized.append((-diff/r_ij).tolist())
+                    edges.extend([i,j], [j,i])
+                    r.extend([r_ij.item()] *2)
+                    r_ij_normalized.extend([(diff/r_ij).tolist(),(-diff/r_ij).tolist()])
         return torch.tensor(edges), torch.tensor(r).unsqueeze(dim=-1), torch.tensor(r_ij_normalized)
     def __len__(self):
         return len(self.data)
