@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from Dataset import DataSetQM9
 
+
 class DataLoaderQM9(DataLoader):
     def __init__(self, datapath: str = "data", batch_size: int = 50, r_cut: float = 5., self_edge: bool = False,
                  test_split: float = 0.1, val_split: float = 0.2, nworkers: int = 2, device: torch.device = "cpu"):

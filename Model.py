@@ -5,6 +5,8 @@ import numpy
 from Dataloader import DataLoaderQM9
 
 
+
+
 def RBF(inputs: torch.Tensor, r_cut: float,output_size: int=20):
     n = torch.arange(1,output_size+1).to(inputs.device)
     return ((torch.sin((n * torch.pi / r_cut) * inputs)) / inputs)
@@ -21,7 +23,6 @@ def mse(preds: torch.Tensor, targets: torch.Tensor):
 def mae(preds: torch.Tensor, targets: torch.Tensor):
     loss = nn.L1Loss()
     return loss(preds,targets)
-
 
 
 class PaiNN(nn.Module):

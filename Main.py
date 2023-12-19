@@ -9,6 +9,7 @@ from Model import saveModel, mse, mae, test
 import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 Model = PaiNN(r_cut=5,
                 device=device
                 ).to(device)

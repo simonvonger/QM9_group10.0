@@ -8,6 +8,7 @@ from Training import Trainer
 from Model import saveModel, mse, mae, test
 import matplotlib.pyplot as plt
 
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def test(model, test_set):

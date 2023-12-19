@@ -4,6 +4,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from torch_geometric.datasets import QM9
 
+
 class DataSetQM9(Dataset):
     
     def __init__(self,r_cut:float,path:str,self_edge:bool=False, device: torch.device = "cpu" ):
