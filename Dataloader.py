@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-from Dataset import DataSetQM9
+from DataImport import DataSetQM9
 
 
 class DataLoaderQM9(DataLoader):
