@@ -16,7 +16,7 @@ Model = PaiNN(r_cut=5,
 def training():
         global Model
         print(f"{device} will be used for training the PaiNN model")
-        
+
         if torch.cuda.device_count() > 1:
               print(f"Using {torch.cuda.device_count()} GPUS.")
               Model = nn.DataParallel(Model)
@@ -38,12 +38,12 @@ def training():
 if __name__=="__main__":
     training()
 
-    #save the best model
+    # To save the best model
     saveModel(Model, path="./final_best_PaiNNModel.pth")
-    #load the best model
+
+    # To load the best model
     best_model = PaiNN(r_cut=5, device=device).to(device)
     best_model.load_state_dict(torch.load("./final_best_PaiNNModel.pth"))
-    #test it
-    test(best_model, DataLoaderQM9(r_cut=5, batch_size=100).get_test())
 
-    
+    # To test the best model
+    test(best_model, DataLoaderQM9(r_cut=5, batch_size=100).get_test())

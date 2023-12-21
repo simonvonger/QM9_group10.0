@@ -6,7 +6,7 @@ from torch_geometric.datasets import QM9
 
 
 class DataSetQM9(Dataset):
-    
+
     def __init__(self,r_cut:float,path:str,self_edge:bool=False, device: torch.device = "cpu" ):
         super(DataSetQM9,self).__init__()
         self.data = QM9(root=path)
@@ -23,7 +23,7 @@ class DataSetQM9(Dataset):
                     edges.append([i,j])
                 diff = pos[j]-pos[i]
                 r_ij = torch.linalg.norm(diff)
-                #Filters r_ij less than r_cut
+                # Filtering r_ij less than r_cut
                 if r_ij <= self.r_cut and i!=j:
                     edges.extend([i,j], [j,i])
                     r.extend([r_ij.item()] *2)
@@ -31,7 +31,7 @@ class DataSetQM9(Dataset):
         return torch.tensor(edges), torch.tensor(r).unsqueeze(dim=-1), torch.tensor(r_ij_normalized)
     def __len__(self):
         return len(self.data)
-    
+
     def __getitem__(self,idx)-> torch.Tensor:
         edges, r, r_ij_normalized = self.edges_atoms(self.data[idx]['pos'])
         edges = edges.to(self.device)
@@ -40,8 +40,3 @@ class DataSetQM9(Dataset):
         molecule = self.data[idx].clone().detach()
 
         return {'z':molecule['z'],'xyz' : molecule['pos'],'edges': edges, 'r_ij': r, 'r_ij_normalized': r_ij_normalized, 'targets': molecule['y'],'n_atom': molecule['z'].shape[0]}
-        
-    
-    
-
-

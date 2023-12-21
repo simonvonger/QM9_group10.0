@@ -1,5 +1,3 @@
-
-
 import torch
 import numpy as np
 import torch.nn as nn
@@ -11,7 +9,7 @@ from Dataloader import DataLoaderQM9
 
 class Trainer:
 
-    
+
     def __init__(self, Model: torch.nn.Module, loss: any, target: int, optimizer: torch.optim, Dataloader, scheduler: torch.optim, device: torch.device = "cpu"):
 
         self.Model = Model
@@ -39,10 +37,11 @@ class Trainer:
             batch = {key: value.to(self.device) for key, value in batch.items()}
             targets = batch["targets"][:, self.target].to(self.device).unsqueeze(dim=-1)
 
-            # Backpropagate using the selected loss
+            # Calculate loss and perform backpropagation
             outputs = self.Model(batch)
             loss = self.loss(outputs, targets)
 
+            # batch size is set to 100
             if batch_num % 100 == 0:
                 print(f"Current loss {loss} Current batch {batch_num}/{len(self.train_set)} "
                     f"({100 * batch_num / len(self.train_set):.2f}%)")
@@ -57,6 +56,7 @@ class Trainer:
                 self.learning_rates.append(current_lr)
 
         # Cleanup at the end of the epoch
+        # This is done to clear the GPU memory cache so less memory is being allocated
         torch.cuda.empty_cache()
 
 
@@ -78,14 +78,14 @@ class Trainer:
                 current_batch_loss = self.loss(pred_val, targets).item()
                 val_loss += current_batch_loss
 
-            return val_loss / (batch_num + 1)  # Add 1 to avoid division by zero if the loop is not executed
+            return val_loss / (batch_num + 1)  # The 1 is added to avoid division by 0 if the loop is not executed
 
 
     def _train(self, num_epoch: int = 100, early_stopping: int = 30, alpha: float = 0.9) -> str:
 
         patience = 0
-        min_loss = float('inf')  # Initialize min_loss with a large value
-        best_model_path = None  # where the best model is
+        min_loss = float('inf')  # Initialize min_loss with infinity
+        best_model_path = None  # the path to the best model is set here
 
         for epoch in range(1, num_epoch + 1):
             self._train_epoch()
@@ -109,9 +109,3 @@ class Trainer:
                     break
 
         return best_model_path
-
-
-
-
-            
-            
