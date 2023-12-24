@@ -25,9 +25,12 @@ class DataSetQM9(Dataset):
                 r_ij = torch.linalg.norm(diff)
                 # Filtering r_ij less than r_cut
                 if r_ij <= self.r_cut and i!=j:
-                    edges.extend([i,j], [j,i])
-                    r.extend([r_ij.item()] *2)
-                    r_ij_normalized.extend([(diff/r_ij).tolist(),(-diff/r_ij).tolist()])
+                    edges.append([i,j])
+                    edges.append([j,i])
+                    r.append(r_ij.item())
+                    r.append(r_ij.item())
+                    r_ij_normalized.append((diff/r_ij).tolist())
+                    r_ij_normalized.append((-diff/r_ij).tolist())
         return torch.tensor(edges), torch.tensor(r).unsqueeze(dim=-1), torch.tensor(r_ij_normalized)
     def __len__(self):
         return len(self.data)
