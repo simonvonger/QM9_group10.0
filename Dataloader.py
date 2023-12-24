@@ -12,7 +12,7 @@ class DataLoaderQM9(DataLoader):
         self.Dataset = DataSetQM9(path=datapath, r_cut=r_cut, self_edge=self_edge)
         self.length = len(self.Dataset)
         self.train_sampler = SubsetRandomSampler(np.array(range(self.length)))
-        self.valid_sampler = self.test.sampler = None
+        self.valid_sampler = self.test_sampler = None
         self.device = device
 
         if test_split:
